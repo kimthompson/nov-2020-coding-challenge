@@ -4,21 +4,33 @@ import getData from './src/getData'
 const MAX_FLOUR = 60000 // in grams
 
 async function app() {
-  const data = await getData('https://raw.githubusercontent.com/emilionavarro/daugherty-nov-challenge/main/pastry_orders.json')
+  let data = await getData('https://raw.githubusercontent.com/emilionavarro/daugherty-nov-challenge/main/pastry_orders.json')
 
-  data.forEach((order) => {
+  // get rid of empty orders
+  data = data.filter((d) => d.length > 0)
+
+  // calculate each order's price and required flour
+  data.forEach((order, i) => {
     let price = 0
     let flourNeeded = 0
 
-    console.log(chalk.magenta(`${order.length} items`))
     order.forEach((item) => {
-      //console.log(`${item.quantity} ${item.name} @ $${item.price} each`)
       price += item.price * item.quantity
       flourNeeded += item.flourConsumption * item.quantity
     })
 
-    console.log(`price: $${price}`)
-    console.log(`flour needed: ${Math.round(flourNeeded)} grams`)
+    order.price = price
+    order.flourNeeded = flourNeeded
+  })
+
+  // sort by price
+  data = data.sort((a, b) => b.price - a.price)
+
+  data.forEach((order, i) => {
+    console.log(chalk.red(`\n${i}`))
+    console.log('-------')
+    console.log(`price: $${order.price}`)
+    console.log(`flour needed: ${Math.round(order.flourNeeded)} grams`)
   })
 }
 
